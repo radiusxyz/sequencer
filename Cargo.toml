@@ -13,7 +13,7 @@ clap = { version = "4.4.7", features = ["derive"] }
 const-hex = "1.12"
 ethers-core = "2.0"
 local-ip-address = "0.6"
-radius-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev = "df4b24469a221b2e084ca8255cef1223ebba538e", features = ["full"] }
+radius-sdk = { git = "https://github.com/radiusxyz/radius-sdk-rs", rev = "48bfcc679307d3ee092ca789b95c396aec838f56", features = ["full"] }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.127"
 sha3 = "0.10"

@@ -127,7 +127,7 @@ async fn callback(events: Events, liveness_client: LivenessClient) {
     // TODO:
     match events {
         Events::Block(block) => {
-            let platform_block_height = block.header.number.unwrap();
+            let platform_block_height = block.number;
 
             // Get the cluster ID list for a given liveness client.
             let cluster_id_list = ClusterIdList::get_or(

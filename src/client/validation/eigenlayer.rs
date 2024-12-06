@@ -3,7 +3,7 @@ use std::sync::Arc;
 use radius_sdk::validation_eigenlayer::{
     publisher::Publisher,
     subscriber::Subscriber,
-    types::{Avs, Bytes},
+    types::{Avs, Bytes, IValidationServiceManager},
 };
 use tokio::time::{sleep, Duration};
 
@@ -122,7 +122,7 @@ async fn callback(event: Avs::NewTaskCreated, context: ValidationClient) {
         let block = Block::get(rollup.rollup_id(), event.task.blockNumber).unwrap();
 
         if block.block_creator_address != context.publisher().address() {
-            let task = Avs::Task {
+            let task = IValidationServiceManager::Task {
                 commitment: Bytes::from_iter(&[0u8; 32]),
                 blockNumber: 0,
                 rollupId: rollup.rollup_id().to_owned(),

@@ -1,5 +1,6 @@
 use std::{
     io::{Stdout, StdoutLock},
+    panic::PanicHookInfo,
     path::{Path, PathBuf},
 };
 
@@ -54,7 +55,10 @@ impl Logger {
 
     pub fn init(self) {
         tracing_subscriber::fmt().with_writer(self).init();
-        std::panic::set_hook(Box::new(|panic_info| tracing::error!("{:?}", panic_info)));
+        std::panic::set_hook(Box::new(|panic_info| {
+            let panic_log: PanicLog = panic_info.into();
+            tracing::error!("{:?}", panic_log);
+        }));
     }
 
     fn today() -> String {
@@ -69,7 +73,7 @@ impl Logger {
             .map_err(LoggerError::OpenFile)
     }
 
-    fn trace_writer<'a>(&'a self) -> Result<LogWriter<'a>, LoggerError> {
+    fn trace_writer(&self) -> Result<LogWriter<'_>, LoggerError> {
         let trace_path = self.trace_path.join(Self::today());
 
         Ok(LogWriter::new(
@@ -79,7 +83,7 @@ impl Logger {
         ))
     }
 
-    fn error_writer<'a>(&'a self) -> Result<LogWriter<'a>, LoggerError> {
+    fn error_writer(&self) -> Result<LogWriter<'_>, LoggerError> {
         let trace_path = self.trace_path.join(Self::today());
         let error_path = self.error_path.join(Self::today());
 
@@ -91,17 +95,54 @@ impl Logger {
     }
 }
 
+pub struct PanicLog<'a>(&'a PanicHookInfo<'a>);
+
+impl std::fmt::Debug for PanicLog<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.format_log(f)?;
+
+        match self.0.location() {
+            Some(location) => write!(
+                f,
+                " at {}:{}:{}",
+                location.file(),
+                location.line(),
+                location.column()
+            ),
+            None => write!(f, ""),
+        }
+    }
+}
+
+impl<'a> From<&'a PanicHookInfo<'_>> for PanicLog<'a> {
+    fn from(value: &'a PanicHookInfo<'_>) -> Self {
+        Self(value)
+    }
+}
+
+impl PanicLog<'_> {
+    pub fn format_log(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if let Some(payload) = self.0.payload().downcast_ref::<&str>() {
+            f.write_str(payload)
+        } else if let Some(payload) = self.0.payload().downcast_ref::<String>() {
+            f.write_str(payload.as_str())
+        } else {
+            f.write_str("Panic occurred")
+        }
+    }
+}
+
 pub struct LogWriter<'a> {
     stdout: StdoutLock<'a>,
     trace_file: std::fs::File,
     error_file: Option<std::fs::File>,
 }
 
-impl<'a> std::io::Write for LogWriter<'a> {
+impl std::io::Write for LogWriter<'_> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.stdout.write(buf)?;
+        let _ = self.stdout.write(buf)?;
         if let Some(error_file) = &mut self.error_file {
-            error_file.write(buf)?;
+            let _ = error_file.write(buf)?;
         }
 
         self.trace_file.write(buf)
