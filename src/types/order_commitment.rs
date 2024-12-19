@@ -74,6 +74,8 @@ pub struct OrderCommitmentData {
     pub rollup_id: String,
     pub block_height: u64,
     pub transaction_order: u64,
+
+    #[serde(serialize_with = "serialize_merkle_node_list")]
     pub pre_merkle_path: Vec<[u8; 32]>,
 }
 

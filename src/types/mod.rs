@@ -41,13 +41,34 @@ where
     serializer.serialize_str(&address.as_hex_string())
 }
 
-fn serialize_address_list<S>(addresses: &Vec<Address>, serializer: S) -> Result<S::Ok, S::Error>
+pub fn serialize_address_list<S>(addresses: &Vec<Address>, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: serde::Serializer,
 {
     let mut seq = serializer.serialize_seq(Some(addresses.len()))?;
     for address in addresses {
         seq.serialize_element(&address.as_hex_string())?;
+    }
+    seq.end()
+}
+
+pub fn serialize_merkle_node<S>(merkle_node: &[u8; 32], serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serializer.serialize_str(&const_hex::encode_prefixed(&merkle_node))
+}
+
+pub fn serialize_merkle_node_list<S>(
+    merkle_node_list: &Vec<[u8; 32]>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut seq = serializer.serialize_seq(Some(merkle_node_list.len()))?;
+    for merkle_node in merkle_node_list {
+        seq.serialize_element(&const_hex::encode_prefixed(&merkle_node))?;
     }
     seq.end()
 }
