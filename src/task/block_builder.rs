@@ -261,8 +261,8 @@ async fn decrypt_skde_transaction(
             .get_decryption_key(skde_encrypted_transaction.key_id())
             .await?;
 
-        e.insert(get_decryption_key_response.decryption_key.sk.clone());
-        get_decryption_key_response.decryption_key.sk
+        e.insert(get_decryption_key_response.decryption_key.clone());
+        get_decryption_key_response.decryption_key
     } else {
         decryption_keys.get(&decryption_key_id).unwrap().clone()
     };

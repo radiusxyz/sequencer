@@ -80,6 +80,8 @@ impl RollupMetadata {
 pub struct ValidationInfo {
     platform: Platform,
     validation_service_provider: ValidationServiceProvider,
+
+    #[serde(serialize_with = "serialize_address")]
     validation_service_manager: Address,
 }
 
@@ -112,9 +114,12 @@ pub struct Rollup {
     rollup_type: RollupType,
     encrypted_transaction_type: EncryptedTransactionType,
 
-    owner: String,
+    #[serde(serialize_with = "serialize_address")]
+    owner: Address,
     validation_info: ValidationInfo,
     order_commitment_type: OrderCommitmentType,
+
+    #[serde(serialize_with = "serialize_address_list")]
     executor_address_list: Vec<Address>,
 
     cluster_id: String,
@@ -130,7 +135,7 @@ impl Rollup {
         rollup_type: RollupType,
         encrypted_transaction_type: EncryptedTransactionType,
 
-        owner: String,
+        owner: Address,
         validation_info: ValidationInfo,
         order_commitment_type: OrderCommitmentType,
         executor_address_list: Vec<Address>,

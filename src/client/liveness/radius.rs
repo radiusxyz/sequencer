@@ -352,7 +352,15 @@ async fn on_new_block(block: Header, liveness_client: LivenessClient) {
                                         rollup_info.rollupId.clone(),
                                         rollup_type,
                                         EncryptedTransactionType::Skde,
-                                        rollup_info.owner.to_string(),
+                                        Address::from_str(
+                                            Platform::from_str(
+                                                &rollup_info.validationInfo.platform,
+                                            )
+                                            .unwrap()
+                                            .into(),
+                                            &rollup_info.owner.to_string(),
+                                        )
+                                        .unwrap(),
                                         validation_info,
                                         order_commitment_type,
                                         executor_address_list,

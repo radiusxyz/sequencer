@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use radius_sdk::json_rpc::client::{Id, RpcClient};
 use serde::{Deserialize, Serialize};
-use skde::delay_encryption::SecretKey;
 
 pub struct DistributedKeyGenerationClient {
     inner: Arc<DistributedKeyGenerationClientInner>,
@@ -32,24 +31,6 @@ impl DistributedKeyGenerationClient {
         Ok(Self {
             inner: Arc::new(inner),
         })
-    }
-
-    pub async fn get_encryption_key(
-        &self,
-        key_id: u64,
-    ) -> Result<GetEncryptionKeyReturn, DistributedKeyGenerationClientError> {
-        let parameter = GetEncryptionKey { key_id };
-
-        self.inner
-            .rpc_client
-            .request(
-                &self.inner.rpc_url,
-                GetEncryptionKey::METHOD_NAME,
-                &parameter,
-                Id::Null,
-            )
-            .await
-            .map_err(DistributedKeyGenerationClientError::GetEncryptionKey)
     }
 
     pub async fn get_decryption_key(
@@ -86,42 +67,6 @@ impl DistributedKeyGenerationClient {
             .await
             .map_err(DistributedKeyGenerationClientError::GetSkdeParams)
     }
-
-    pub async fn get_latest_encryption_key(
-        &self,
-    ) -> Result<GetLatestEncryptionKeyResponse, DistributedKeyGenerationClientError> {
-        let parameter = GetLatestEncryptionKey {};
-
-        self.inner
-            .rpc_client
-            .request(
-                &self.inner.rpc_url,
-                GetLatestEncryptionKey::METHOD_NAME,
-                &parameter,
-                Id::Null,
-            )
-            .await
-            .map_err(DistributedKeyGenerationClientError::GetLatestEncryptionKey)
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetEncryptionKey {
-    pub key_id: u64,
-}
-
-impl GetEncryptionKey {
-    pub const METHOD_NAME: &'static str = "get_encryption_key";
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetEncryptionKeyReturn {
-    pub key: PublicKey,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PublicKey {
-    pub pk: skde::BigUint,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -135,7 +80,7 @@ impl GetDecryptionKey {
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetDecryptionKeyResponse {
-    pub decryption_key: SecretKey,
+    pub decryption_key: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -148,19 +93,6 @@ impl GetSkdeParams {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct GetSkdeParamsResponse {
     pub skde_params: skde::delay_encryption::SkdeParams,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetLatestEncryptionKey {}
-
-impl GetLatestEncryptionKey {
-    pub const METHOD_NAME: &'static str = "get_latest_encryption_key";
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct GetLatestEncryptionKeyResponse {
-    pub encryption_key: PublicKey,
-    pub key_id: u64,
 }
 
 #[derive(Debug)]

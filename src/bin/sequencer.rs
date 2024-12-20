@@ -313,8 +313,8 @@ async fn initialize_external_rpc_server(context: &AppState) -> Result<JoinHandle
             external::GetRawTransactionList::handler,
         )?
         .register_rpc_method(
-            internal::debug::GetRollup::METHOD_NAME,
-            internal::debug::GetRollup::handler,
+            external::GetRollup::METHOD_NAME,
+            external::GetRollup::handler,
         )?
         .register_rpc_method(external::GetBlock::METHOD_NAME, external::GetBlock::handler)?
         .init(external_rpc_url.clone())
